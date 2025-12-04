@@ -1,7 +1,122 @@
-export default function Background() {
+// components/Background.tsx
+"use client";
+
+import { useRef, useEffect, useState } from "react";
+
+interface SquaresProps {
+  direction?: "diagonal" | "up" | "right" | "down" | "left";
+  speed?: number;
+  borderColor?: string;
+  squareSize?: number;
+  hoverFillColor?: string;
+}
+
+export default function Background({
+  direction = "right",
+  speed = 0.5,
+  borderColor = "#333",
+  squareSize = 40,
+  hoverFillColor = "#222",
+}: SquaresProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const requestRef = useRef<number>(0);
+  const numSquaresX = useRef<number>(0);
+  const numSquaresY = useRef<number>(0);
+  const gridOffset = useRef({ x: 0, y: 0 });
+  const [hoveredSquare, setHoveredSquare] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      numSquaresX.current = Math.ceil(canvas.width / squareSize) + 1;
+      numSquaresY.current = Math.ceil(canvas.height / squareSize) + 1;
+    };
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    const draw = () => {
+      if (!ctx) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize;
+      const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize;
+
+      ctx.lineWidth = 0.5;
+
+      for (let x = startX; x < canvas.width + squareSize; x += squareSize) {
+        for (let y = startY; y < canvas.height + squareSize; y += squareSize) {
+          const squareX = x - (gridOffset.current.x % squareSize);
+          const squareY = y - (gridOffset.current.y % squareSize);
+
+          // Handle hover state
+          if (
+            hoveredSquare &&
+            Math.floor((x - startX) / squareSize) === hoveredSquare.x &&
+            Math.floor((y - startY) / squareSize) === hoveredSquare.y
+          ) {
+            ctx.fillStyle = hoverFillColor;
+            ctx.fillRect(squareX, squareY, squareSize, squareSize);
+          }
+
+          ctx.strokeStyle = borderColor;
+          ctx.strokeRect(squareX, squareY, squareSize, squareSize);
+        }
+      }
+
+      // Move grid
+      const moveSpeed = speed;
+      if (direction === "right") gridOffset.current.x -= moveSpeed;
+      if (direction === "left") gridOffset.current.x += moveSpeed;
+      if (direction === "down") gridOffset.current.y -= moveSpeed;
+      if (direction === "up") gridOffset.current.y += moveSpeed;
+      if (direction === "diagonal") {
+        gridOffset.current.x -= moveSpeed;
+        gridOffset.current.y -= moveSpeed;
+      }
+
+      requestRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      cancelAnimationFrame(requestRef.current);
+    };
+  }, [direction, speed, borderColor, hoverFillColor, hoveredSquare, squareSize]);
+
+  // Handle interactions to "light up" squares
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize;
+    const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize;
+
+    const hoveredX = Math.floor((x + (gridOffset.current.x % squareSize)) / squareSize);
+    const hoveredY = Math.floor((y + (gridOffset.current.y % squareSize)) / squareSize);
+
+    setHoveredSquare({ x: hoveredX, y: hoveredY });
+  };
+
+  const handleMouseLeave = () => setHoveredSquare(null);
+
   return (
-    <div className="fixed inset-0 -z-10 h-full w-full bg-white dark:bg-slate-950 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-      <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-blue-400 opacity-20 blur-[100px] dark:bg-blue-900"></div>
-    </div>
-  )
+    <canvas
+      ref={canvasRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="fixed inset-0 -z-10 h-full w-full bg-white dark:bg-slate-950 block"
+    />
+  );
 }
