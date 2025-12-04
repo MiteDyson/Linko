@@ -15,7 +15,7 @@ export default function Home() {
         {/* Right Side: Form Card */}
         <Card className="shadow-xl border-slate-100">
           <CardHeader>
-           // Inside app/page.tsx
+         
 <CardTitle className="flex items-center gap-2 text-2xl font-bold text-slate-800">
   Linko
 </CardTitle>
