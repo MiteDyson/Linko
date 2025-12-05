@@ -22,7 +22,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn(inter.className, "min-h-screen antialiased")}>
+      {/* Added overflow-x-hidden to prevent horizontal scroll issues on mobile */}
+      <body className={cn(inter.className, "min-h-screen antialiased overflow-x-hidden")}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -38,8 +39,8 @@ export default function RootLayout({
           {/* Main Content */}
           {children}
 
-          {/* GitHub Star Button (Bottom Left) */}
-          <div className="fixed bottom-6 left-6 z-50">
+          {/* GitHub Star Button (Bottom Left) - Responsive sizing and padding */}
+          <div className="fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-50">
             <a
               href="https://github.com/mitedyson/linko" 
               target="_blank"
@@ -47,9 +48,10 @@ export default function RootLayout({
             >
               <Button
                 variant="outline"
-                className="gap-2 rounded-full bg-background/80 backdrop-blur-sm border-slate-200 dark:border-slate-800 shadow-lg hover:scale-105 transition-transform"
+                size="sm"
+                className="gap-2 rounded-full bg-background/80 backdrop-blur-sm border-slate-200 dark:border-slate-800Qb shadow-lg hover:scale-105 transition-transform text-xs lg:text-sm h-8 lg:h-9 px-3 lg:px-4"
               >
-                <Github className="w-4 h-4" />
+                <Github className="w-3 h-3 lg:w-4 lg:h-4" />
                 <span>Star on GitHub</span>
               </Button>
             </a>
