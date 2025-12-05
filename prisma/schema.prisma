@@ -11,6 +11,7 @@ model Link {
   id        String   @id @default(cuid())
   original  String
   shortCode String   @unique
+  custom    Boolean  @default(false) // Track if it's a custom link
   clicks    Int      @default(0)
   createdAt DateTime @default(now())
 }
